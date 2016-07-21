@@ -23,15 +23,49 @@ set statusline+=%{fugitive#statusline()}
 
 " sytastic support
 let g:syntastic_always_populate_loc_list = 1
-let g:syntastic_auto_loc_list = 1
 let g:syntastic_check_on_open = 1
 let g:syntastic_check_on_wq = 0
+
+let g:syntastic_enable_balloons = 1
+let g:syntastic_enable_highlighting = 1
+let g:syntastic_auto_loc_list = 2
+let g:syntastic_loc_list_height = 5
 
 " let g:syntastic_javascript_closurecompiler_path="/home/pi/closurecompiler/compiler.jar"
 let g:syntastic_javascript_checkers = ['jshint']
 let g:syntastic_coffee_checkers= ['coffee', 'coffeelint']
-let g:syntastic_typescript_checkers= ['tsc','tslint']
-let g:syntastic_typescript_tsc_fname = ''
+let g:tsuquyomi_disable_quickfix = 1
+let g:syntastic_typescript_checkers = ['tsuquyomi'] " You shouldn't use 'tsc' checker.
+
+autocmd FileType typescript setlocal completeopt+=menu,preview
+set ballooneval
+autocmd FileType typescript setlocal balloonexpr=tsuquyomi#balloonexpr()
+autocmd FileType typescript nmap <buffer> <Leader>t : <C-u>echo tsuquyomi#hint()<CR>
+autocmd FileType typescript nmap <buffer> <Leader>r <Plug>(TsuquyomiRenameSymbol)
+autocmd FileType typescript nmap <buffer> <Leader>u <Plug>(TsuquyomiReferences)
+autocmd FileType typescript nmap <buffer> <C-b> <Plug>(TsuquyomiDefinition)
+autocmd FileType typescript nmap <buffer> <C-[> <Plug>(TsuquyomiGoBack)
+
+"Commands to make auto complete work like I'd expect
+autocmd FileType typescript imap <buffer> <C-@> <C-Space>
+set completeopt=longest,menuone
+autocmd FileType typescript inoremap <expr> <CR> pumvisible() ? "\<C-y>" : "\<C-g>u\<CR>"
+autocmd FileType typescript inoremap <expr> <C-n> pumvisible() ? '<C-n>' :
+  \ '<C-n><C-r>=pumvisible() ? "\<lt>Down>" : ""<CR>'
+
+autocmd FileType typescript inoremap <expr> <M-,> pumvisible() ? '<C-n>' :
+  \ '<C-x><C-o><C-n><C-p><C-r>=pumvisible() ? "\<lt>Down>" : ""<CR>'
+
+" open omni completion menu closing previous if open and opening new menu without changing the text
+autocmd FileType typescript inoremap <expr> <C-Space> (pumvisible() ? (col('.') > 1 ? '<Esc>i<Right>' : '<Esc>i') : '') .
+            \ '<C-x><C-o><C-r>=pumvisible() ? "\<lt>C-n>\<lt>C-p>\<lt>Down>" : ""<CR>'
+" open user completion menu closing previous if open and opening new menu without changing the text
+inoremap <expr> <S-Space> (pumvisible() ? (col('.') > 1 ? '<Esc>i<Right>' : '<Esc>i') : '') .
+            \ '<C-x><C-u><C-r>=pumvisible() ? "\<lt>C-n>\<lt>C-p>\<lt>Down>" : ""<CR>'
+
+
+
+
 let g:syntastic_enable_signs=1
 let g:syntastic_error_symbol='✗'
 let g:syntastic_warning_symbol='⚠'
