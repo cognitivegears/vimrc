@@ -203,3 +203,6 @@ nnoremap <leader>p "+p<cr>
 nnoremap <leader>yy "+yy<cr>
 nnoremap <leader>y "+y<cr>
 vnoremap <leader>y "+y<cr>
+
+" Macvim
+set guifont=hack:h14
