@@ -97,6 +97,7 @@ set ruler
 set backspace=indent,eol,start
 
 set relativenumber
+set number
 set undofile
 set undodir=~/.vim/undodir
 let mapleader = ","
@@ -110,10 +111,13 @@ set textwidth=79
 set formatoptions=qrnl
 set colorcolumn=85
 
-nnoremap <up> <nop>
-nnoremap <down> <nop>
-nnoremap <left> <nop>
-nnoremap <right> <nop>
+" Make direction keys do something useful
+" move between splits
+nnoremap <up> <C-W>k
+nnoremap <down> <C-W>j
+nnoremap <left> <C-W>h
+nnoremap <right> <C-W>l
+
 inoremap <up> <nop>
 inoremap <down> <nop>
 inoremap <left> <nop>
@@ -181,18 +185,8 @@ set foldnestmax=10      " 10 nested fold max
 nnoremap <space> za
 set foldmethod=indent   " fold based on indent level
 
-python from powerline.vim import setup as powerline_setup
-python powerline_setup()
-python del powerline_setup
-
 "turn on undo toggle
 nnoremap \ :GundoToggle<cr>
-
-augroup toggle_relative_number "can be toggled normally with 'cor'
-    autocmd!
-    autocmd InsertEnter * :setlocal norelativenumber
-    autocmd InsertLeave * :setlocal relativenumber
-augroup END
 
 let g:auto_save = 1 "Enable AutoSave on Vim startup
 let g:auto_save_in_insert_mode = 0 "do not save while in insert mode
@@ -206,3 +200,6 @@ vnoremap <leader>y "+y<cr>
 
 " Macvim
 set guifont=hack:h14
+
+" Airline
+let g:airline_powerline_fonts = 1
