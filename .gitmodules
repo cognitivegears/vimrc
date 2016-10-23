@@ -31,3 +31,6 @@
 [submodule ".vim/bundle/vim-airline"]
 	path = .vim/bundle/vim-airline
 	url = https://github.com/vim-airline/vim-airline.git
+[submodule ".vim/bundle/vim-auto-save"]
+	path = .vim/bundle/vim-auto-save
+	url = https://github.com/vim-scripts/vim-auto-save.git
