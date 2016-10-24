@@ -21,6 +21,9 @@ set statusline+=%{SyntasticStatuslineFlag()}
 set statusline+=%*
 set statusline+=%{fugitive#statusline()}
 
+" Auto-read file if changed from outside
+set autoread
+
 " sytastic support
 let g:syntastic_always_populate_loc_list = 1
 let g:syntastic_check_on_open = 1
@@ -203,3 +206,82 @@ set guifont=hack:h14
 
 " Airline
 let g:airline_powerline_fonts = 1
+
+
+" Utnite
+nnoremap <C-l> :Unite -prompt-visible -prompt-focus -prompt=🔎 -auto-preview -start-insert -unique file file_rec/async file_mru buffer<CR>
+nnoremap <C-g> :Unite -auto-preview -start-insert grep:.<CR>
+autocmd FileType unite call s:unite_settings()
+function! s:unite_settings()
+  " Play nice with supertab
+  let b:SuperTabDisabled=1
+  " Enable navigation with control-j and control-k in insert mode
+  imap <buffer> <C-j>   <Plug>(unite_select_next_line)
+  imap <buffer> <C-k>   <Plug>(unite_select_previous_line)
+endfunction
+call unite#filters#matcher_default#use(['matcher_fuzzy'])
+call unite#filters#sorter_default#use(['sorter_rank'])
+
+let g:unite_split_rule = "botright"
+let g:unite_update_time = 200
+let g:unite_cursor_line_highlight = 'TabLineSel'
+
+" For ack.
+if executable('ag')
+  let g:unite_source_grep_command = 'ag'
+  let g:unite_source_grep_default_opts =
+        \ '-i --vimgrep --hidden --ignore ' .
+        \ '''.hg'' --ignore ''.svn'' --ignore ''.git'' --ignore ''.bzr'''
+  let g:unite_source_grep_recursive_opt = ''
+elseif executable('ack-grep')
+  let g:unite_source_grep_command = 'ack-grep'
+  let g:unite_source_grep_default_opts = '-i --no-heading --no-color -a -H'
+  let g:unite_source_grep_recursive_opt = ''
+elseif executable('ack')
+  let g:unite_source_grep_command = 'ack'
+  let g:unite_source_grep_default_opts = '-i --no-heading --no-color -a -H'
+  let g:unite_source_grep_recursive_opt = ''
+endif
+
+" Anzu
+nmap n <Plug>(anzu-n-with-echo)
+nmap N <Plug>(anzu-N-with-echo)
+nmap * <Plug>(anzu-star-with-echo)
+nmap # <Plug>(anzu-sharp-with-echo)
+" clear status
+nmap <Esc><Esc> <Plug>(anzu-clear-search-status)
+" statusline
+set statusline+=%{anzu#search_status()}
+let g:saved_search = '' 
+
+" Clear the last search on VIM startup (so it won't start with a search window)
+autocmd VimEnter * call ClearLastSearch()
+function! ClearLastSearch()
+  let @/ = ''
+endfunction
+
+" If the last search register has changed, start Unite
+autocmd CursorHold * call CheckSearch()
+function! CheckSearch()
+  if g:saved_search != @/ && !has("vim_starting")
+    let g:saved_search = @/
+    " We are in a new search
+    AnzuUpdateSearchStatus|echo anzu#search_status()
+    UniteClose searchList
+    Unite -buffer-name=searchList -prompt=🔎 -prompt-focus -immediately -auto-highlight -no-quit -winwidth=40 -no-truncate -vertical -no-empty -no-focus anzu
+  endif
+endfunction
+
+" Clear highlighting and the search list on escape in normal mode
+nnoremap <esc> :noh<return>:UniteClose searchList<return>:AnzuClearSearchStatus<return>:let @/ = ""<return><esc>
+nnoremap <esc>^[ <esc>^[
+
+" Close unite search results if it is the last buffer left
+autocmd BufEnter * if (winnr("$") == 1 && unite#get_unite_winnr("searchList") != -1)|q|endif
+
+" Update the search status results while moving through the file
+augroup anzu-update-search-status
+  autocmd!
+  autocmd CursorMoved *
+  \ :AnzuUpdateSearchStatus|echo anzu#search_status()
+augroup END
