@@ -243,7 +243,7 @@ elseif executable('ack')
   let g:unite_source_grep_recursive_opt = ''
 endif
 
-" Anzu
+" General Anzu configuration
 nmap n <Plug>(anzu-n-with-echo)
 nmap N <Plug>(anzu-N-with-echo)
 nmap * <Plug>(anzu-star-with-echo)
@@ -252,6 +252,14 @@ nmap # <Plug>(anzu-sharp-with-echo)
 nmap <Esc><Esc> <Plug>(anzu-clear-search-status)
 " statusline
 set statusline+=%{anzu#search_status()}
+" Update the search status results while moving through the file
+augroup anzu-update-search-status
+  autocmd!
+  autocmd CursorMoved *
+  \ :AnzuUpdateSearchStatus|echo anzu#search_status()
+augroup END
+
+" Stores the last seen search criteria
 let g:saved_search = '' 
 
 " Clear the last search on VIM startup (so it won't start with a search window)
@@ -260,12 +268,14 @@ function! ClearLastSearch()
   let @/ = ''
 endfunction
 
-" If the last search register has changed, start Unite
+" This function monitors the last search results, and when it has changed
+" closes the previous search window (if any) and starts a new search window.
 autocmd CursorHold * call CheckSearch()
 function! CheckSearch()
   if g:saved_search != @/ && !has("vim_starting")
+    " Save the current search term
     let g:saved_search = @/
-    " We are in a new search
+    " We are in a new search, update Anzu and close/open search list window
     AnzuUpdateSearchStatus|echo anzu#search_status()
     UniteClose searchList
     Unite -buffer-name=searchList -prompt=🔎 -prompt-focus -immediately -auto-highlight -no-quit -winwidth=40 -no-truncate -vertical -no-empty -no-focus anzu
@@ -276,12 +286,6 @@ endfunction
 nnoremap <esc> :noh<return>:UniteClose searchList<return>:AnzuClearSearchStatus<return>:let @/ = ""<return><esc>
 nnoremap <esc>^[ <esc>^[
 
-" Close unite search results if it is the last buffer left
+" Close unite search results window if it is the last buffer left
 autocmd BufEnter * if (winnr("$") == 1 && unite#get_unite_winnr("searchList") != -1)|q|endif
 
-" Update the search status results while moving through the file
-augroup anzu-update-search-status
-  autocmd!
-  autocmd CursorMoved *
-  \ :AnzuUpdateSearchStatus|echo anzu#search_status()
-augroup END
