@@ -49,26 +49,6 @@ autocmd FileType typescript nmap <buffer> <Leader>u <Plug>(TsuquyomiReferences)
 autocmd FileType typescript nmap <buffer> <C-b> <Plug>(TsuquyomiDefinition)
 autocmd FileType typescript nmap <buffer> <C-[> <Plug>(TsuquyomiGoBack)
 
-"Commands to make auto complete work like I'd expect
-autocmd FileType typescript imap <buffer> <C-@> <C-Space>
-set completeopt=longest,menuone
-autocmd FileType typescript inoremap <expr> <CR> pumvisible() ? "\<C-y>" : "\<C-g>u\<CR>"
-autocmd FileType typescript inoremap <expr> <C-n> pumvisible() ? '<C-n>' :
-  \ '<C-n><C-r>=pumvisible() ? "\<lt>Down>" : ""<CR>'
-
-autocmd FileType typescript inoremap <expr> <M-,> pumvisible() ? '<C-n>' :
-  \ '<C-x><C-o><C-n><C-p><C-r>=pumvisible() ? "\<lt>Down>" : ""<CR>'
-
-" open omni completion menu closing previous if open and opening new menu without changing the text
-autocmd FileType typescript inoremap <expr> <C-Space> (pumvisible() ? (col('.') > 1 ? '<Esc>i<Right>' : '<Esc>i') : '') .
-            \ '<C-x><C-o><C-r>=pumvisible() ? "\<lt>C-n>\<lt>C-p>\<lt>Down>" : ""<CR>'
-" open user completion menu closing previous if open and opening new menu without changing the text
-inoremap <expr> <S-Space> (pumvisible() ? (col('.') > 1 ? '<Esc>i<Right>' : '<Esc>i') : '') .
-            \ '<C-x><C-u><C-r>=pumvisible() ? "\<lt>C-n>\<lt>C-p>\<lt>Down>" : ""<CR>'
-
-
-
-
 let g:syntastic_enable_signs=1
 let g:syntastic_error_symbol='✗'
 let g:syntastic_warning_symbol='⚠'
@@ -209,7 +189,7 @@ let g:airline_powerline_fonts = 1
 
 
 " Utnite
-nnoremap <C-l> :Unite -prompt-visible -prompt-focus -prompt=🔎 -auto-preview -start-insert -unique file file_rec/async file_mru buffer<CR>
+nnoremap = :Unite -prompt-visible -prompt-focus -prompt=🔎 -auto-preview -start-insert -unique file file_rec/async file_mru buffer<CR>
 nnoremap <C-g> :Unite -auto-preview -start-insert grep:.<CR>
 autocmd FileType unite call s:unite_settings()
 function! s:unite_settings()
@@ -289,3 +269,47 @@ nnoremap <esc>^[ <esc>^[
 " Close unite search results window if it is the last buffer left
 autocmd BufEnter * if (winnr("$") == 1 && unite#get_unite_winnr("searchList") != -1)|q|endif
 
+
+" Eclim
+let g:EclimCompletionMethod = 'omnifunc'
+let g:EclimValidateSortResults = 'severity'
+" Import the class under the cursor
+nnoremap <silent> <buffer> <leader>i :JavaImport<CR>
+" Search for javadocs of the element under the cursor
+nnoremap <silent> <buffer> <leader>d :JavaDocSearch -x declaration<CR>
+" Perform a context sensitive search of the element under the cursor
+autocmd FileType java nnoremap <silent> <buffer> <cr> :JavaCorrect<CR>
+autocmd FileType java nnoremap <silent> <buffer> <leader>* :JavaSearchContext<CR>
+autocmd FileType java nnoremap <silent> <C-o> :JavaImportOrganize<CR>
+autocmd FileType java nnoremap <silent> <C-l> :%JavaFormat<CR>
+
+function! JavaRename()
+  call inputsave()
+  let newname = input('Enter name: ')
+  call inputrestore()
+  execute "JavaRename " . newname
+endfunction
+
+function! JavaGenerate()
+  call inputsave()
+  let which = input('(g)etter, (s)etter, (b)oth, (c)onstructor: ')
+  call inputrestore()
+  if which == "g" || which == "G"
+    execute "JavaGet"
+  elseif which == "s" || which == "S"
+    execute "JavaSet"
+  elseif which == "b" || which == "B"
+    execute "JavaGetSet"
+  elseif which == "c" || which == "C"
+    execute JavaConstructor"
+  else
+    echo "\r"
+    echo "Not a valid option, " . which . "\r"
+  endif
+endfunction
+
+
+autocmd FileType java nnoremap <buffer> <Leader>r :call JavaRename()<CR>
+autocmd FileType java nnoremap <buffer> <Leader>u :RefactorUndo<CR>
+autocmd FileType java nnoremap <buffer> <Leader>c :JavaDocComment<CR>
+autocmd FileType java nnoremap <buffer> <Leader>g :call JavaGenerate()<CR>
